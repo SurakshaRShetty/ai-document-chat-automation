@@ -32,3 +32,17 @@ Known limitations / final manual checks
 4. Client-side logout does not itself prove backend security. Confirm protected React routes redirect and protected API endpoints reject requests without a valid token.
 5. If the AI provider quota is exhausted, the test stops and saves partial results.
 6. Signup may not navigate when the account already exists; the script then attempts login.
+
+Start the backend
+cd "C:\SURAKSHA - PROJECTS\AI-Document-Chat-System-main\backend"
+.\venv\Scripts\Activate.ps1
+python -m uvicorn app.main:app --reload
+
+Start the frontend 
+cd "C:\SURAKSHA - PROJECTS\AI-Document-Chat-System-main\frontend"
+npm run dev
+
+Run the automation
+cd "C:\SURAKSHA - PROJECTS\AI-Document-Chat-System-main\ai-chatbot-automation"
+.\venv\Scripts\Activate.ps1
+python -m pytest -v -s test_all_questions.py --html=small_test_report.html --self-contained-html
