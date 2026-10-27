@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "question": "What is Python?",
+    "expected_answer": "Python is a high-level, interpreted programming language known for its readable syntax. It is commonly used for web development, automation, data analysis, and artificial intelligence."
+  },
+  {
+    "id": 2,
+    "question": "What is a variable in Python?",
+    "expected_answer": "A variable is a name that refers to a value. For example, name = 'Sam' assigns the string 'Sam' to the variable name."
+  },
+  {
+    "id": 3,
+    "question": "What is a Python list?",
+    "expected_answer": "A list is an ordered, mutable collection in Python. It can contain multiple items, which can be accessed by index. Example: numbers = [1, 2, 3]."
+  },
+  {
+    "id": 4,
+    "question": "What is the difference between a list and a tuple in Python?",
+    "expected_answer": "A list is mutable, so its contents can be changed after creation. A tuple is immutable, so its contents cannot be changed after creation."
+  },
+  {
+    "id": 5,
+    "question": "What is a Python function?",
+    "expected_answer": "A function is a reusable block of code that performs a task. It is defined using the def keyword and can accept parameters and return a result."
+  },
+  {
+    "id": 6,
+    "question": "What does a dictionary store in Python?",
+    "expected_answer": "A dictionary stores data as key-value pairs. Each key maps to a value. Example: student = {'name': 'Ravi', 'age': 21}."
+  },
+  {
+    "id": 7,
+    "question": "What is a Python loop used for?",
+    "expected_answer": "A loop repeats a block of code. Python provides for loops to iterate over items and while loops to repeat while a condition remains true."
+  },
+  {
+    "id": 8,
+    "question": "What is exception handling in Python?",
+    "expected_answer": "Exception handling lets a program respond to runtime errors. Python commonly uses try and except blocks to handle exceptions."
+  },
+  {
+    "id": 9,
+    "question": "What is a Python module?",
+    "expected_answer": "A module is a Python file containing reusable code, such as functions, classes, and variables, that can be imported into another Python program."
+  },
+  {
+    "id": 10,
+    "question": "What is the purpose of a return statement?",
+    "expected_answer": "A return statement ends a function call and sends a result back to the code that called the function. Without an explicit return statement, a Python function returns None."
+  }
+]

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Semantic Test Report</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+.note { padding: 12px; background: #f3f4f6; margin-bottom: 16px; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
+th { background: #e9eef5; }
+</style>
+</head>
+<body>
+<h1>Semantic Test Report</h1>
+<p>Existing answers scored: 10 question(s).</p>
+<div class="note">
+Keyword and semantic scores compare saved expected answers with saved chatbot answers.
+They are indicators of similarity, not proof of factual correctness.
+No chatbot API calls were made to generate this report.
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>id</th><th>question</th><th>expected_answer</th><th>chatbot_answer</th><th>keyword_precision</th><th>keyword_recall</th><th>keyword_f1</th><th>semantic_similarity</th><th>result</th><th>validation_details</th></tr></thead>
+<tbody><tr><td>1</td><td>What is Python?</td><td>Python is a high-level, interpreted programming language known for its readable syntax. It is commonly used for web development, automation, data analysis, and artificial intelligence.</td><td>Python is a high‑level, interpreted programming language known for its readable syntax, and it is widely used for web development, automation, data analysis, and artificial intelligence.</td><td>0.9412</td><td>0.9412</td><td>0.9412</td><td>0.9943</td><td>PASS</td><td>Keyword overlap: 94%. Heuristic only; manually verify factual correctness.</td></tr>
+<tr><td>2</td><td>What is a variable in Python?</td><td>A variable is a name that refers to a value. For example, name = &#x27;Sam&#x27; assigns the string &#x27;Sam&#x27; to the variable name.</td><td>A variable is a name that refers to a value. For example, the statement `name = &#x27;Sam&#x27;` assigns the string `&#x27;Sam&#x27;` to the variable `name`.</td><td>0.8889</td><td>1.0</td><td>0.9412</td><td>0.9858</td><td>PASS</td><td>Keyword overlap: 100%. Heuristic only; manually verify factual correctness.</td></tr>
+<tr><td>3</td><td>What is a Python list?</td><td>A list is an ordered, mutable collection in Python. It can contain multiple items, which can be accessed by index. Example: numbers = [1, 2, 3].</td><td>A list is an ordered, mutable collection in Python. It can hold multiple items, and you can access those items by their index. For example:  <br><br>```python<br>numbers = [1, 2, 3]<br>```</td><td>0.75</td><td>0.8182</td><td>0.7826</td><td>0.9645</td><td>PASS</td><td>Keyword overlap: 82%. Heuristic only; manually verify factual correctness.</td></tr>
+<tr><td>4</td><td>What is the difference between a list and a tuple in Python?</td><td>A list is mutable, so its contents can be changed after creation. A tuple is immutable, so its contents cannot be changed after creation.</td><td>A list is mutable—its elements can be added, removed, or changed after the list is created.  <br>A tuple is immutable—once it’s created, its elements cannot be altered.</td><td>0.5</td><td>0.75</td><td>0.6</td><td>0.9088</td><td>PASS</td><td>Keyword overlap: 75%. Heuristic only; manually verify factual correctness.</td></tr>
+<tr><td>5</td><td>What is a Python function?</td><td>A function is a reusable block of code that performs a task. It is defined using the def keyword and can accept parameters and return a result.</td><td>A Python function is a reusable block of code that performs a task. It is defined with the `def` keyword, can accept parameters, and can return a result.</td><td>1.0</td><td>0.9286</td><td>0.963</td><td>0.8493</td><td>PASS</td><td>Keyword overlap: 93%. Heuristic only; manually verify factual correctness.</td></tr>
+<tr><td>6</td><td>What does a dictionary store in Python?</td><td>A dictionary stores data as key-value pairs. Each key maps to a value. Example: student = {&#x27;name&#x27;: &#x27;Ravi&#x27;, &#x27;age&#x27;: 21}.</td><td>A dictionary stores data as key‑value pairs. Each key maps to a value. For example:  <br><br>```python<br>student = {&#x27;name&#x27;: &#x27;Ravi&#x27;, &#x27;age&#x27;: 21}<br>```</td><td>1.0</td><td>1.0</td><td>1.0</td><td>0.9507</td><td>PASS</td><td>Keyword overlap: 100%. Heuristic only; manually verify factual correctness.</td></tr>
+<tr><td>7</td><td>What is a Python loop used for?</td><td>A loop repeats a block of code. Python provides for loops to iterate over items and while loops to repeat while a condition remains true.</td><td>A loop repeats a block of code. Python provides **for** loops to iterate over items and **while** loops to repeat while a condition remains true.</td><td>1.0</td><td>1.0</td><td>1.0</td><td>0.9868</td><td>PASS</td><td>Keyword overlap: 100%. Heuristic only; manually verify factual correctness.</td></tr>
+<tr><td>8</td><td>What is exception handling in Python?</td><td>Exception handling lets a program respond to runtime errors. Python commonly uses try and except blocks to handle exceptions.</td><td>Exception handling lets a program respond to runtime errors. In Python this is typically done with `try` and `except` blocks.</td><td>0.8333</td><td>0.7143</td><td>0.7692</td><td>0.9699</td><td>PASS</td><td>Keyword overlap: 71%. Heuristic only; manually verify factual correctness.</td></tr>
+<tr><td>9</td><td>What is a Python module?</td><td>A module is a Python file containing reusable code, such as functions, classes, and variables, that can be imported into another Python program.</td><td>A module is a Python file that contains reusable code—such as functions, classes, and variables—that can be imported into another Python program.</td><td>0.9167</td><td>0.9167</td><td>0.9167</td><td>0.9981</td><td>PASS</td><td>Keyword overlap: 92%. Heuristic only; manually verify factual correctness.</td></tr>
+<tr><td>10</td><td>What is the purpose of a return statement?</td><td>A return statement ends a function call and sends a result back to the code that called the function. Without an explicit return statement, a Python function returns None.</td><td>A return statement ends a function call and sends a result back to the code that called the function. If a function has no explicit return, it returns None.</td><td>0.9286</td><td>0.9286</td><td>0.9286</td><td>0.9041</td><td>PASS</td><td>Keyword overlap: 93%. Heuristic only; manually verify factual correctness.</td></tr></tbody>
+</table>
+</div>
+</body>
+</html>

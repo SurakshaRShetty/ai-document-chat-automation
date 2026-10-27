@@ -1,0 +1,2 @@
+﻿question,chatbot_answer,result,details
+"According to the uploaded Python basics document, what is the capital city of Japan?","I’m sorry, but the provided document does not contain information about the capital city of Japan.",PASS,Possible refusal detected; manually verify the answer.
