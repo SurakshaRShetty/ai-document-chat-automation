@@ -1,0 +1,426 @@
+﻿id,question,expected_answer,chatbot_answer,result,error
+1,What is the difference between INNER JOIN and LEFT JOIN?,INNER JOIN returns only rows with matching values in both tables. LEFT JOIN returns every row from the left table plus matching rows from the right; unmatched right-side columns are NULL.,"INNER JOIN returns only rows that have matching values in both tables.  
+LEFT JOIN returns every row from the left table and the matching rows from the right table; if there is no match, the right‑side columns are NULL.",PASS,Keyword overlap: 88%. Manual review may still be needed.
+2,"Given Employees with Ravi (dept 10), Priya (dept 20), Amit (dept 30), Neha (NULL), and Departments with 10=IT, 20=HR, 40=Finance, show every employee and department.","Use LEFT JOIN because all employees must remain. Ravi maps to IT, Priya to HR, Amit to NULL (department 30 has no match), and Neha to NULL (no department ID).","Use a **LEFT JOIN** so that every employee is kept even if they don’t have a matching department:
+
+```sql
+SELECT e.emp_name,
+       d.dept_name
+FROM   Employees e
+LEFT JOIN Departments d
+       ON e.dept_id = d.dept_id;
+```
+
+Result set:
+
+| emp_name | dept_name |
+|----------|-----------|
+| Ravi     | IT        |
+| Priya    | HR        |
+| Amit     | NULL      |  -- dept 30 has no match
+| Neha     | NULL      |  -- no dept_id
+
+This shows every",PASS,Keyword overlap: 75%. Manual review may still be needed.
+3,What is a RIGHT JOIN? When might you use it?,"RIGHT JOIN returns all rows from the right table and matching rows from the left. It can show every department, including departments with no employees. The same result can usually be written more clearly by reversing tables and using LEFT JOIN.","**Answer (from the provided context)**  
+A **RIGHT JOIN** returns all rows from the right table and the matching rows from the left table. It can be used when you want to display every record from the right table, even if there is no matching record in the left table. For example, to list every department and any employees that belong to it (including departments that have no employees), you could use a RIGHT JOIN:
+
+```sql
+SELECT d.dept_name, e.emp_name
+FROM Employees e
+RIGHT JOIN Departments d ON e.dept_id = d.dept_id;
+```
+
+The same result can usually be written more clearly by reversing the tables and using a LEFT JOIN.",PASS,Keyword overlap: 95%. Manual review may still be needed.
+4,What does FULL OUTER JOIN return?,"It returns matching rows plus unmatched rows from both tables. Missing columns on either side are NULL. Some databases, including MySQL, do not support FULL OUTER JOIN directly.","FULL OUTER JOIN returns all rows that match between the two tables **plus** any rows that do not have a match in either table. For rows that have no counterpart in the other table, the columns from the missing side are filled with NULL. In short, it gives you the union of the left‑join and right‑join results.",PASS,Keyword overlap: 60%. Manual review may still be needed.
+5,What is a CROSS JOIN?,"It returns every possible combination of rows from the two tables. If one table has 3 rows and the other has 4, the result has 12 rows.","A **CROSS JOIN** returns every possible combination of rows from the two tables.  
+If one table has 3 rows and the other has 4 rows, the result will contain 3 × 4 = 12 rows.  
+
+Example:
+
+```sql
+SELECT e.emp_name, d.dept_name
+FROM Employees e
+CROSS JOIN Departments d;
+```
+
+This produces a Cartesian product of the `Employees` and `Departments` tables.",PASS,Keyword overlap: 100%. Manual review may still be needed.
+6,How do you find employees who do not have a matching department?,Use LEFT JOIN and filter for NULL on the right-side key.,"Use a **LEFT JOIN** from `Employees` to `Departments` and filter for rows where the department key is `NULL`:
+
+```sql
+SELECT e.emp_id, e.emp_name
+FROM Employees e
+LEFT JOIN Departments d ON e.dept_id = d.dept_id
+WHERE d.dept_id IS NULL;
+```
+
+This returns all employees that have no matching department.",PASS,Keyword overlap: 75%. Manual review may still be needed.
+7,How do you find departments that have no employees?,Start from Departments and keep rows with no matching employee.,"Use a **LEFT JOIN** from `Departments` to `Employees` and keep only the rows where no employee matches:
+
+```sql
+SELECT d.dept_id,
+       d.dept_name
+FROM   Departments d
+LEFT JOIN Employees e
+       ON e.dept_id = d.dept_id
+WHERE  e.emp_id IS NULL;
+```
+
+This returns every department that has zero employees.",PASS,Keyword overlap: 67%. Manual review may still be needed.
+8,"How do you count employees in each department, including departments with zero employees?",Use LEFT JOIN and GROUP BY the department. COUNT(e.emp_id) counts matched employee IDs; COUNT(*) would count the department row even when no employee matches.,"Use a **LEFT JOIN** from the `Departments` table to the `Employees` table and group by the department.  
+Count the employee IDs (or use `COUNT(*)` if you prefer) so that departments with no matching employees still appear with a count of 0.
+
+```sql
+SELECT d.dept_name,
+       COUNT(e.emp_id) AS employee_count
+FROM Departments d
+LEFT JOIN Employees e
+       ON e.dept_id = d.dept_id
+GROUP BY d.dept_id, d.dept_name;
+```
+
+This query returns every department, including those that have zero employees, with the correct employee count.",PASS,Keyword overlap: 60%. Manual review may still be needed.
+9,What is the difference between WHERE and HAVING?,WHERE filters individual rows before grouping. HAVING filters groups after GROUP BY.,WHERE filters individual rows before grouping. HAVING filters groups after GROUP BY.,PASS,Keyword overlap: 100%. Manual review may still be needed.
+10,How do you find duplicate email addresses?,"Group by email and keep groups whose count is greater than one. If NULL emails should not be treated as duplicates, filter them out.","To find duplicate email addresses, group the rows by the `email` column and keep only those groups that appear more than once.  
+If you don’t want to treat `NULL` values as duplicates, filter them out first.
+
+```sql
+SELECT email, COUNT(*) AS occurrences
+FROM Employees
+WHERE email IS NOT NULL          -- optional: exclude NULLs
+GROUP BY email
+HAVING COUNT(*) > 1;              -- keep only duplicates
+```
+
+This query returns each email that appears more than once in the `Employees` table, along with the number of occurrences.",PASS,Keyword overlap: 65%. Manual review may still be needed.
+11,How do you display the rows containing duplicate email addresses?,"First identify duplicate emails in a subquery, then return every row with those emails.","**Answer**
+
+To display all rows that have duplicate email addresses, first find the emails that appear more than once (excluding NULLs), then return every row whose email is in that list.
+
+```sql
+SELECT *
+FROM Employees
+WHERE email IN (
+    SELECT email
+    FROM Employees
+    WHERE email IS NOT NULL
+    GROUP BY email
+    HAVING COUNT(*) > 1
+);
+```
+
+This query lists every employee record whose email address is duplicated in the table.",PASS,Keyword overlap: 70%. Manual review may still be needed.
+12,How do you delete duplicate rows while keeping one record?,Use ROW_NUMBER() to rank rows within each duplicate group and delete rows ranked above 1. Choose a stable key and back up/test first; exact DELETE syntax varies by database.,"**Answer (from the provided context)**  
+
+Use a window function to rank the rows that share the same duplicate value, then delete all but the first rank.  
+Example (for duplicate emails):
+
+```sql
+WITH ranked AS (
+    SELECT emp_id,
+           ROW_NUMBER() OVER (
+               PARTITION BY email          -- duplicate column(s)
+               ORDER BY emp_id             -- stable key to keep one row
+           ) AS rn
+    FROM Employees
+    WHERE email IS NOT NULL
+)
+DELETE FROM Employees
+WHERE emp_id IN (SELECT emp_id FROM ranked WHERE rn > 1);
+```
+
+*Explanation:*  
+- `ROW_NUMBER()` assigns",PASS,Keyword overlap: 48%. Manual review may still be needed.
+13,How do you find the second-highest distinct salary?,Use a subquery to find the maximum salary below the overall maximum. DISTINCT is important when multiple employees share the same salary.,"Use a subquery that finds the maximum salary that is lower than the overall maximum.  
+```sql
+SELECT MAX(salary) AS second_highest_salary
+FROM Employees
+WHERE salary < (SELECT MAX(salary) FROM Employees);
+```
+This returns the second‑highest distinct salary.",PASS,Keyword overlap: 54%. Manual review may still be needed.
+14,How do you find the Nth-highest distinct salary?,"Use DENSE_RANK over salaries in descending order, then select the rank needed. This example finds the third-highest distinct salary. QA Automation Fresher Interview Guide Page 4","Use a window function that ranks the distinct salaries in descending order and then pick the rank you need.  
+For example, to get the **third‑highest** distinct salary:
+
+```sql
+WITH ranked AS (
+    SELECT salary,
+           DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk
+    FROM Employees
+    WHERE salary IS NOT NULL
+)
+SELECT DISTINCT salary
+FROM ranked
+WHERE rnk = 3;   -- replace 3 with the desired N
+```
+
+Replace `3` with any integer `N` to retrieve the Nth‑highest distinct salary. The `DENSE_RANK()` function ensures that ties receive the same rank, so you get distinct salaries only.",PASS,Keyword overlap: 67%. Manual review may still be needed.
+15,How do you find the highest-paid employee in each department?,Use a window function to rank employees within each department. RANK keeps ties for the highest salary.,"Use a window function to rank employees within each department and then pick the top rank.  
+For example:
+
+```sql
+WITH ranked AS (
+    SELECT e.*,
+           RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rnk
+    FROM Employees e
+)
+SELECT emp_id,
+       emp_name,
+       dept_id,
+       salary
+FROM ranked
+WHERE rnk = 1;   -- highest‑paid (ties kept)
+```
+
+This returns the highest‑paid employee(s) in every department.",PASS,Keyword overlap: 92%. Manual review may still be needed.
+16,"What is the difference between COUNT(*), COUNT(column), and COUNT(DISTINCT column)?",COUNT(*) counts rows. COUNT(column) counts non-NULL values in that column. COUNT(DISTINCT column) counts distinct non-NULL values.,"COUNT(*) counts all rows in the result set.  
+COUNT(column) counts only the non‑NULL values in that specific column.  
+COUNT(DISTINCT column) counts the distinct non‑NULL values in that column.",PASS,Keyword overlap: 100%. Manual review may still be needed.
+17,How do you find employees whose salary is above the company average?,Compare each salary to a scalar subquery returning the average salary.,"Use a scalar subquery that returns the company average salary and compare each employee’s salary to it:
+
+```sql
+SELECT emp_name, salary
+FROM Employees
+WHERE salary > (SELECT AVG(salary) FROM Employees);
+```
+
+This returns all employees whose salary is greater than the overall average salary.",PASS,Keyword overlap: 86%. Manual review may still be needed.
+18,How do you find employees earning more than their department's average salary?,Use a correlated subquery or a window function. The correlated version compares each employee to the average for the same department.,"**Answer (from the provided context)**  
+
+Use a correlated subquery or a window function.  
+The correlated version compares each employee to the average for the same department:
+
+```sql
+SELECT e.emp_name, e.dept_id, e.salary
+FROM Employees e
+WHERE e.salary > (
+    SELECT AVG(e2.salary)
+    FROM Employees e2
+    WHERE e2.dept_id = e.dept_id
+);
+```
+
+Alternatively, a window function can be used:
+
+```sql
+SELECT emp_name, dept_id, salary
+FROM (
+    SELECT e.*,
+           AVG(salary) OVER (PARTITION BY dept_id) AS dept_avg
+    FROM Employees e
+) AS sub
+WHERE salary > dept_avg;
+```
+
+Both approaches return employees whose salary is higher than the average salary of their own department.",PASS,Keyword overlap: 100%. Manual review may still be needed.
+19,How do you find customers who have never placed an order?,Use NOT EXISTS; it handles this anti-join requirement clearly and avoids common NULL issues associated with NOT IN.,"Use a NOT EXISTS anti‑join. For example:
+
+```sql
+SELECT c.customer_id,
+       c.name
+FROM   Customers c
+WHERE  NOT EXISTS (
+          SELECT 1
+          FROM   Orders o
+          WHERE  o.customer_id = c.customer_id
+       );
+```
+
+This returns every customer that has no matching row in the `Orders` table.",PASS,Keyword overlap: 33%. Manual review may still be needed.
+20,"How do you calculate total order amount for each customer, including customers with no orders?","LEFT JOIN Customers to Orders, then use COALESCE to show zero for customers with no orders.","Use a **LEFT JOIN** from `Customers` to `Orders` and wrap the aggregate in `COALESCE` so that customers with no matching orders get a zero:
+
+```sql
+SELECT
+    c.customer_id,
+    c.name,
+    COALESCE(SUM(o.amount), 0) AS total_amount
+FROM
+    Customers c
+LEFT JOIN
+    Orders o
+    ON o.customer_id = c.customer_id
+GROUP BY
+    c.customer_id,
+    c.name;
+```
+
+This returns every customer, showing `0` for those who have never placed an order.",PASS,Keyword overlap: 78%. Manual review may still be needed.
+21,What is the difference between UNION and UNION ALL?,UNION combines result sets and removes duplicate rows; UNION ALL keeps duplicates and is generally faster. Both queries must return the same number of compatible columns. QA Automation Fresher Interview Guide Page 5,"UNION combines the result sets and removes duplicate rows, whereas UNION ALL keeps all rows—including duplicates—so it is generally faster. Both queries must return the same number of compatible columns.",PASS,Keyword overlap: 78%. Manual review may still be needed.
+22,How do you find records where a value is missing?,Use IS NULL or IS NOT NULL. Do not write column = NULL because NULL represents an unknown/missing value.,"Use the `IS NULL` (or `IS NOT NULL`) predicate.  
+`NULL` is a special marker for “unknown/missing”, so you must not compare it with `=` or `<>`.
+
+**Example**
+
+```sql
+-- Find all employees whose department ID is missing
+SELECT *
+FROM Employees
+WHERE dept_id IS NULL;
+```
+
+This returns every row where the `dept_id` column contains a NULL value.  
+(Conversely, `WHERE dept_id IS NOT NULL` would return rows where the value is present.)",PASS,Keyword overlap: 67%. Manual review may still be needed.
+23,What is a self join? Give a manager/employee example.,"A self join joins a table to itself, often to relate employees to their managers.","A **self join** is a join where a table is joined to itself. It is often used to relate rows within the same table, such as linking an employee to their manager.
+
+**Example (manager/employee):**
+
+```sql
+SELECT 
+    e.emp_name AS employee,
+    m.emp_name AS manager
+FROM Employees e
+LEFT JOIN Employees m
+    ON e.manager_id = m.emp_id;
+```
+
+This query returns each employee’s name along with the name of their manager by joining the `Employees` table to itself.",PASS,Keyword overlap: 78%. Manual review may still be needed.
+24,"What is the difference between DELETE, TRUNCATE, and DROP?",DELETE removes selected rows and supports WHERE. TRUNCATE removes all rows efficiently and usually has no WHERE clause; transactional and identity-reset behavior depends on the database. DROP removes the table object itself.,"DELETE removes selected rows and supports a WHERE clause.  
+TRUNCATE removes all rows from a table efficiently and usually does not allow a WHERE clause; its transactional and identity‑reset behavior depends on the database.  
+DROP removes the table object itself from the database.",PASS,Keyword overlap: 95%. Manual review may still be needed.
+25,"How do you find the number of employees in each department, showing only departments with at least 3 employees?",Group employees by department and filter groups using HAVING.,"Use a `GROUP BY` on the department and filter the groups with a `HAVING` clause:
+
+```sql
+SELECT dept_id,
+       COUNT(*) AS total_employees
+FROM Employees
+GROUP BY dept_id
+HAVING COUNT(*) >= 3;
+```
+
+This returns only those departments that have at least three employees.",PASS,Keyword overlap: 86%. Manual review may still be needed.
+26,What is a primary key versus a foreign key?,A primary key uniquely identifies each row and cannot be NULL. A foreign key references a key in another (or the same) table and helps enforce referential integrity; NULL may be allowed depending on the column definition.,"A primary key uniquely identifies each row in a table and cannot be NULL.  
+A foreign key references a key (usually a primary key) in another table (or the same table) and helps enforce referential integrity; it may allow NULL values depending on how the column is defined.",PASS,Keyword overlap: 91%. Manual review may still be needed.
+27,"What is an index, and what is the trade-off?","An index can speed up reads, joins, and filtering, but consumes storage and can slow inserts, updates, and deletes because the index must be maintained.","An index is a database structure that speeds up reads, joins, and filtering operations by allowing the database to locate rows more quickly.  
+The trade‑off is that it consumes additional storage space and can slow down write operations—insert, update, and delete—because the index must be updated each time the underlying data changes.",PASS,Keyword overlap: 60%. Manual review may still be needed.
+28,A join unexpectedly returns more rows than expected. How do you investigate?,"Check whether the join key is unique on both sides. One-to-many or many-to-many matches multiply rows. Inspect duplicate keys, validate the intended relationship, and aggregate or deduplicate only when the business requirement supports it.","A join unexpectedly returns more rows than expected.  
+**How to investigate**
+
+1. **Check the uniqueness of the join keys** – Verify that the columns you are joining on are unique in both tables.  
+2. **Identify one‑to‑many or many‑to‑many relationships** – If one side has duplicate keys, the join will multiply rows.  
+3. **Inspect duplicate keys** – Look for duplicate values in the join columns and confirm whether they are intentional.  
+4. **Validate the intended relationship** – Ensure the join logic matches the business requirement (e.g., you really want a one‑to‑one match).  
+5. **Aggregate or deduplicate if appropriate** – Only remove duplicates or aggregate when the business rule allows it.",PASS,Keyword overlap: 86%. Manual review may still be needed.
+29,How do you get the latest order for each customer?,"Use ROW_NUMBER to rank each customer's orders from newest to oldest, then keep row number 1. The example assumes order_date and order_id columns exist.","Use a window function to rank each customer’s orders and keep only the top‑ranked row:
+
+```sql
+WITH ranked AS (
+    SELECT o.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY customer_id
+               ORDER BY order_date DESC, order_id DESC
+           ) AS rn
+    FROM Orders o
+)
+SELECT *
+FROM ranked
+WHERE rn = 1;
+```
+
+This returns the most recent order for every customer (assuming `order_date` and `order_id` exist).",PASS,Keyword overlap: 61%. Manual review may still be needed.
+30,What SQL checks would you perform when testing an application feature that saves an order?,"Verify the inserted row and correct customer ID, amount, status, timestamps, and foreign keys; check that one user action does not create duplicate orders; test invalid/missing data; confirm updates and rollback behavior where relevant; and compare the database result with the UI/API response. QA Automation Fresher Interview Guide Page 6 Section 2 — Manual Testing & QA Fundamentals","Verify the inserted row and correct customer ID, amount, status, timestamps, and foreign keys; check that one user action does not create duplicate orders; test invalid/missing data; confirm updates and rollback behavior where relevant; and compare the database result with the UI/API response.",PASS,Keyword overlap: 78%. Manual review may still be needed.
+31,What is software testing?,Software testing evaluates software to find defects and check whether it meets requirements. It also provides information about risk and quality; testing cannot prove that a product has zero defects.,Software testing evaluates software to find defects and check whether it meets requirements. It also provides information about risk and quality; testing cannot prove that a product has zero defects.,PASS,Keyword overlap: 100%. Manual review may still be needed.
+32,What is the difference between verification and validation?,"Verification asks whether we are building the product correctly according to specifications (reviews, inspections). Validation asks whether we built the right product for users (executing and evaluating the software).","Verification asks whether we are building the product correctly according to specifications (reviews, inspections).  
+Validation asks whether we built the right product for users (executing and evaluating the software).",PASS,Keyword overlap: 100%. Manual review may still be needed.
+33,What is the difference between smoke and sanity testing?,"Smoke testing is a broad, shallow check that a build's critical functions work and is stable enough for further testing. Sanity testing is a focused check of a specific change or area, often after a small fix. Exact usage can vary between teams.","Smoke testing is a broad, shallow check that a build’s critical functions work and that the build is stable enough for further testing.  
+Sanity testing is a focused check of a specific change or area, usually performed after a small fix, to verify that the particular issue has been resolved. (Exact usage can vary between teams.)",PASS,Keyword overlap: 96%. Manual review may still be needed.
+34,What is the difference between retesting and regression testing?,Retesting verifies that a specific reported defect has been fixed. Regression testing checks that the change has not broken previously working functionality.,"Retesting verifies that a specific reported defect has been fixed.  
+Regression testing checks that the change has not broken previously working functionality.",PASS,Keyword overlap: 100%. Manual review may still be needed.
+35,Explain the bug life cycle.,"A typical flow is New/Open → Assigned → In Progress → Fixed/Resolved → Retest → Closed. If the issue remains, the tester reopens it. Other statuses include Duplicate, Rejected/Invalid, Deferred, and Cannot Reproduce. The exact workflow depends on the team.","A typical bug life cycle follows these stages:
+
+1. **New/Open** – The defect is reported and logged.  
+2. **Assigned** – A developer or team member is assigned to investigate.  
+3. **In Progress** – Work is being done to fix the issue.  
+4. **Fixed/Resolved** – The developer marks the bug as fixed.  
+5. **Retest** – QA verifies that the fix works and that no new issues were introduced.  
+6. **Closed** – Once the bug passes retesting, it is closed.  
+
+If the defect still reproduces after the fix, the tester can **reopen** it, returning it to the earlier stages. Other possible statuses include **Duplicate**, **Rejected/Invalid**, **Deferred**, and **Cannot Reproduce**. The exact workflow may vary by team.",PASS,Keyword overlap: 85%. Manual review may still be needed.
+36,What is severity versus priority?,Severity describes the impact of a defect on the system; priority describes how urgently it should be fixed. Example: a crash affecting all users is high severity and usually high priority; a typo on a rarely visited page may be low severity but priority can depend on business context.,"Severity describes the impact of a defect on the system (e.g., how much it breaks or degrades functionality).  
+Priority describes how urgently that defect should be fixed (e.g., based on business needs or release schedule).",PASS,Keyword overlap: 40%. Manual review may still be needed.
+37,What should a good bug report contain?,"A clear title, environment/build, preconditions, reproducible steps, expected result, actual result, severity/priority, screenshots or video, logs, and relevant test data. Avoid vague titles such as 'not working'.","A good bug report should contain:
+
+- A clear title  
+- Environment/build information  
+- Preconditions  
+- Reproducible steps  
+- Expected result  
+- Actual result  
+- Severity/priority  
+- Screenshots or video  
+- Logs  
+- Relevant test data  
+
+Avoid vague titles such as “not working.”",PASS,Keyword overlap: 100%. Manual review may still be needed.
+38,How do you analyze a bug before raising it?,"Reproduce it, compare actual behavior with requirements, isolate the steps and test data, check browser/device/environment, capture evidence and logs, see whether it is reproducible, and search for existing duplicate reports. Raise it with enough information for developers to investigate.","Reproduce the defect, compare the actual behavior with the requirements, isolate the exact steps and test data, check the browser/device/environment, capture evidence and logs, confirm it is reproducible, and search for any existing duplicate reports. Then raise the bug with enough information for developers to investigate.",PASS,Keyword overlap: 93%. Manual review may still be needed.
+39,What is Jira used for in QA?,"Jira is commonly used to track tasks, defects, stories, and their status. A tester creates a defect, fills in evidence and impact, links it to a story or test, follows status changes, retests the fix, and closes or reopens it.","Jira is commonly used to track tasks, defects, stories, and their status. A tester creates a defect, fills in evidence and impact, links it to a story or test, follows status changes, retests the fix, and closes or reopens it.",PASS,Keyword overlap: 100%. Manual review may still be needed.
+40,What is a test case? What makes a good test case?,"A test case defines preconditions, test data, steps, and expected results for a scenario. Good test cases are clear, repeatable, traceable to requirements, and cover positive, negative, boundary, and relevant role/permission scenarios.","A test case defines **preconditions, test data, steps, and expected results** for a specific scenario.  
+Good test cases are:
+
+* **Clear** – easy to understand and follow.  
+* **Repeatable** – can be executed consistently each time.  
+* **Traceable** – linked back to the requirements or user stories.  
+* **Comprehensive** – cover positive, negative, boundary, and relevant role/permission scenarios.",PASS,Keyword overlap: 100%. Manual review may still be needed.
+41,What is the difference between a test scenario and a test case?,"A test scenario is a high-level situation to test, such as 'verify login'. Test cases break it into specific steps and expected outcomes, such as valid credentials, invalid password, empty fields, and locked account.","A test scenario is a high‑level situation to test, such as “verify login.”  
+A test case breaks that scenario into specific steps and expected outcomes—for example, testing valid credentials, an invalid password, empty fields, and a locked account.",PASS,Keyword overlap: 91%. Manual review may still be needed.
+42,What is boundary value analysis?,"It tests values at and around the edges of an allowed range because defects often occur at boundaries. If a field accepts 1–100, test 0, 1, 2, 99, 100, and 101 as appropriate. QA Automation Fresher Interview Guide Page 7","Boundary value analysis is a testing technique that focuses on values at and just outside the edges of an allowed input range, because defects often occur at boundaries. For example, if a field accepts values from 1 to 100, you would test values such as 0, 1, 2, 99, 100, and 101.",PASS,Keyword overlap: 64%. Manual review may still be needed.
+43,What is equivalence partitioning?,"It divides inputs into groups expected to behave similarly, then tests representative values from each group. For an age field accepting 18–60, possible groups are below 18, 18–60, and above 60.","Equivalence partitioning divides inputs into groups that are expected to behave similarly, and then tests representative values from each group. For example, for an age field that accepts 18–60, the partitions might be: below 18, 18–60, and above 60.",PASS,Keyword overlap: 89%. Manual review may still be needed.
+44,When should a bug be reopened?,"When the fix does not resolve the original issue, the issue still reproduces under agreed conditions, or the fix introduces the same defect again. Include new evidence and precise reproduction steps.","A bug should be reopened when the fix does **not** resolve the original issue, the issue still reproduces under the agreed conditions, or the fix introduces the same defect again. In such cases, provide new evidence and precise reproduction steps.",PASS,Keyword overlap: 95%. Manual review may still be needed.
+45,What would you do if a developer says your bug is not a bug?,"Stay factual and professional. Recheck the requirement, reproduce the behavior, share steps and evidence, discuss the expected behavior with the product owner or lead if ambiguous, and update the ticket based on the agreed decision. QA Automation Fresher Interview Guide Page 8 Section 3 — Playwright Automation","I’m sorry, but the provided context does not contain an answer to that question.",REVIEW,Keyword overlap: 0%. Check whether the answer has the same meaning as the PDF.
+46,What is Playwright?,"Playwright is a browser automation framework used to test web applications. It supports Chromium, Firefox, and WebKit and provides locators, assertions, browser contexts, network handling, and parallel test execution.","Playwright is a browser automation framework used to test web applications. It supports Chromium, Firefox, and WebKit and provides locators, assertions, browser contexts, network handling, and parallel test execution.",PASS,Keyword overlap: 100%. Manual review may still be needed.
+47,How do you locate an element in Playwright?,"Prefer user-facing locators such as getByRole, getByLabel, getByText, or getByPlaceholder. Use a stable test ID when appropriate. Avoid brittle selectors tied to layout or generated CSS classes. await page.getByRole('button', { name: 'Login' }).click();","**Answer**
+
+Use Playwright’s *user‑facing* locators, which are robust and auto‑wait:
+
+```ts
+// Example: click a button labeled “Login”
+await page.getByRole('button', { name: 'Login' }).click();
+```
+
+Other preferred locators:
+
+- `page.getByLabel('…')` – for form labels  
+- `page.getByText('…')` – for visible text  
+- `page.getByPlaceholder('…')` – for input placeholders  
+- `page.getByTestId('…')` – if you have a stable test ID",PASS,Keyword overlap: 59%. Manual review may still be needed.
+48,What is the difference between locator() and a one-time element handle?,"A Locator represents a way to find an element and is re-evaluated when used, supporting auto-waiting and dynamic pages. Element handles point to a particular DOM element and can become stale; locators are generally preferred.","A Locator represents a way to find an element and is re‑evaluated each time it’s used, supporting auto‑waiting and dynamic pages. An element handle points to a specific DOM element and can become stale; locators are generally preferred.",PASS,Keyword overlap: 86%. Manual review may still be needed.
+49,What are assertions? Give an example.,"Assertions verify expected outcomes. Playwright's web-first assertions retry until the condition passes or times out. await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();",,FAIL,AssertionError: Chat API returned HTTP 500
+50,Explain auto-waiting and explicit waits.,Playwright automatically waits for actionability before actions and retries web-first assertions. Prefer waiting for a meaningful locator or response instead of fixed sleeps. Use waitForTimeout only for debugging or rare justified cases.,,FAIL,AssertionError: Chat API returned HTTP 500
+51,How do you handle a dropdown?,"For a native select, use selectOption. For a custom dropdown, click it and select the visible option using a stable locator. await page.getByLabel('Country').selectOption({ label: 'India' });",,FAIL,AssertionError: Chat API returned HTTP 500
+52,How do you handle dynamic elements?,"Use robust locators based on role, label, text, or test ID; scope locators to a relevant container; wait for the expected state; avoid relying on changing indexes or sleeps; and handle changing data explicitly.",,FAIL,AssertionError: Chat API returned HTTP 500
+53,What is the Page Object Model (POM)?,"POM separates page-specific locators and actions into page classes, keeping tests focused on scenarios. It reduces duplication and makes maintenance easier, but page objects should not become huge collections of unrelated helpers.",,FAIL,AssertionError: Chat API returned HTTP 500
+54,How do you handle flaky tests?,"Identify whether the cause is timing, test data, shared state, environment, network, or a real product race condition. Use reliable locators and web-first assertions, isolate data, clean up after tests, capture traces/screenshots, and do not simply add retries to hide the root cause.",,FAIL,AssertionError: Chat API returned HTTP 500
+55,How would you test a login page using Playwright?,"Cover valid login, invalid password, empty fields, validation messages, loading/error states, session behavior, keyboard accessibility, and redirect. Assert both visible UI behavior and relevant network/API behavior where useful.",,FAIL,AssertionError: Chat API returned HTTP 500
+56,How do you upload a file?,"Use setInputFiles on the file input; test allowed file types, size limits, invalid files, and the resulting upload status. await page.getByLabel('Upload document').setInputFiles('tests/fixtures/sample.pdf'); QA Automation Fresher Interview Guide Page 9",,FAIL,AssertionError: Chat API returned HTTP 500
+57,How do you test that an API request succeeded?,"Wait for the relevant response while triggering the action, then assert status and response body, and verify the UI reflects the result. const responsePromise = page.waitForResponse(r => r.url().includes('/api/orders') && r.request().method() === 'POST'); await page.getByRole('button', { name: 'Place order' }).click(); const response = await responsePromise; expect(response.status()).toBe(201);",,FAIL,AssertionError: Chat API returned HTTP 500
+58,How do you run tests in headed and headless modes?,Use the Playwright test runner. Headless runs without a visible browser UI; headed shows the browser and is useful for debugging. Configuration and CLI options depend on the project setup. npx playwright test npx playwright test --headed,,FAIL,AssertionError: Chat API returned HTTP 500
+59,What is a browser context?,A BrowserContext is an isolated browser session with its own cookies and storage. It helps tests run independently and supports separate users or sessions without launching a separate browser process for each.,,FAIL,AssertionError: Chat API returned HTTP 500
+60,How would you debug a failed Playwright test?,"Read the error and assertion, reproduce the test, inspect screenshots/video/trace, check locator uniqueness and timing, inspect network responses and console errors, and determine whether it is a test issue, environment issue, or application defect. QA Automation Fresher Interview Guide Page 10 Section 4 — API Testing & Test Automation Practices",,FAIL,AssertionError: Chat API returned HTTP 500
+61,What is an API?,"An API defines how software components communicate. In web testing, an HTTP API commonly accepts requests and returns status codes, headers, and data such as JSON.",,FAIL,AssertionError: Chat API returned HTTP 500
+62,What do common HTTP status codes mean?,200 OK means success; 201 Created means a resource was created; 204 No Content means success with no response body; 400 Bad Request means invalid request; 401 Unauthorized means authentication is missing/invalid; 403 Forbidden means not permitted; 404 Not Found means resource not found; 500 indicates a server error.,,FAIL,AssertionError: Chat API returned HTTP 500
+63,What should you validate in an API test?,"Status code, response schema and data, headers, response time where requirements exist, authentication and authorization, negative inputs, error messages, persistence, and side effects such as duplicate records.",,FAIL,AssertionError: Chat API returned HTTP 500
+64,What is the difference between authentication and authorization?,Authentication verifies who the user is. Authorization checks what that user is allowed to do.,,FAIL,AssertionError: Chat API returned HTTP 500
+65,How do you test a POST endpoint that creates a record?,"Send valid data and verify success status and response fields; query or retrieve the record to confirm persistence; test missing/invalid fields, unauthenticated access, duplicate requests, boundary values, and whether invalid requests leave no unwanted data.",,FAIL,AssertionError: Chat API returned HTTP 500
+66,What is the difference between PUT and PATCH?,"PUT typically replaces the target resource representation, while PATCH applies a partial modification. Exact semantics depend on the API contract.",,FAIL,AssertionError: Chat API returned HTTP 500
+67,What is CI/CD and why run tests in a pipeline?,Continuous Integration frequently integrates code changes and runs automated checks. Continuous Delivery/Deployment automates preparing or releasing changes. Automated tests in the pipeline catch regressions early and provide repeatable feedback.,,FAIL,AssertionError: Chat API returned HTTP 500
+68,What makes an automated test maintainable?,"Clear naming, focused assertions, reusable helpers, stable locators, isolated test data, minimal duplication, useful failure diagnostics, and avoiding dependencies on test execution order. QA Automation Fresher Interview Guide Page 11 Section 5 — n8n & Workflow Automation",,FAIL,AssertionError: Chat API returned HTTP 500
+69,What is n8n?,"n8n is a workflow automation platform that connects apps and APIs using nodes. A workflow commonly starts with a trigger, processes data through nodes, and performs one or more actions.",,FAIL,AssertionError: Chat API returned HTTP 500
+70,What is a node in n8n?,"A node is a unit of work, such as a trigger, HTTP request, data transformation, condition, or message action. Nodes pass data through the workflow.",,FAIL,AssertionError: Chat API returned HTTP 500
+71,What is a trigger?,"A trigger starts a workflow, for example a webhook request, schedule, app event, or manual run. A regular action node does not usually start the workflow by itself.",,FAIL,AssertionError: Chat API returned HTTP 500
+72,How would you automate a QA report using n8n?,Trigger the workflow on a schedule or when test results are received; read test results from an API or file; summarize passed/failed tests; format the report; send it to email or Teams; and handle errors and missing data.,,FAIL,AssertionError: Chat API returned HTTP 500
+73,What is a webhook?,"A webhook is an HTTP endpoint that another system can call to notify a workflow or service about an event. Validate the request, protect the endpoint, and handle retries or duplicate deliveries.",,FAIL,AssertionError: Chat API returned HTTP 500
+74,How do you handle workflow failures?,"Check execution logs, add validation and error branches, configure retries only for transient failures, notify the responsible person, record enough context to debug, and make actions idempotent where possible.",,FAIL,AssertionError: Chat API returned HTTP 500
+75,How could n8n work with an API?,"Use an HTTP Request node to call an endpoint, configure method, URL, headers and body, handle authentication securely, inspect the response, transform data if needed, and route errors appropriately.",,FAIL,AssertionError: Chat API returned HTTP 500
+76,What is the difference between a manual trigger and a schedule trigger?,A manual trigger starts the workflow when a person runs it. A schedule trigger starts it automatically at configured times or intervals. QA Automation Fresher Interview Guide Page 12 Section 6 — Real-World QA Scenarios,,FAIL,AssertionError: Chat API returned HTTP 500
+77,A login button does nothing when clicked. What do you do?,"Reproduce the issue, check prerequisites and validation, inspect browser console and network requests, verify expected behavior in requirements, test in a clean session and supported browsers, capture evidence, and raise a detailed bug if the behavior is incorrect.",,FAIL,AssertionError: Chat API returned HTTP 500
+78,A bug occurs only sometimes. How do you investigate?,"Record exact steps, timing, environment, test data, browser/device, and frequency. Check logs, network failures, race conditions and dependencies. Repeat in controlled conditions and attach traces or video; report it as intermittent if it cannot be made fully deterministic.",,FAIL,AssertionError: Chat API returned HTTP 500
+79,You have only one hour to test a release. How do you prioritize?,"Use risk-based testing: test critical user journeys, high-impact changes, authentication/permissions, core integrations, and recently changed areas first. Run a focused smoke test and communicate what was and was not covered.",,FAIL,AssertionError: Chat API returned HTTP 500
+80,A test passes locally but fails in CI. What do you check?,"Compare browser/runtime versions, environment variables, secrets, test data, parallel execution, time zone, network access, headless behavior, and file paths. Review traces and logs, then reproduce using the CI configuration.",,FAIL,AssertionError: Chat API returned HTTP 500
+81,"A developer says the issue is fixed, but you still see it. What next?","Verify the tested build/environment and exact steps, clear stale state if appropriate, collect fresh evidence, retest the fix, and reopen or update the defect with details rather than closing it based on the developer's statement.",,FAIL,AssertionError: Chat API returned HTTP 500
+82,"How would you test a form that accepts an amount from ■1 to ■10,000?","Test minimum and maximum values, just below and above them, zero, negatives, decimals if allowed, empty input, letters/special characters, whitespace, very long values, copy/paste, and whether the UI and backend enforce the same rules.",,FAIL,AssertionError: Chat API returned HTTP 500
+83,"An API returns 200, but the feature is broken. Is the test passed?","Not necessarily. A 200 status alone does not prove correctness. Validate response content, schema, business rules, database side effects, and whether the UI behaves as expected.",,FAIL,AssertionError: Chat API returned HTTP 500
+84,How would you test role-based access for Project Manager and Project Viewer?,Verify each role's allowed and forbidden actions. A manager may create/update projects while a viewer can only view. Test direct API calls as well as UI controls; hiding a button is not sufficient security. Confirm unauthorized actions return appropriate responses and do not change data.,,FAIL,AssertionError: Chat API returned HTTP 500
+85,How would you test a report generated by an automated workflow?,"Check trigger timing, source data completeness, totals and calculations, correct recipients, formatting, duplicate delivery, empty data, failure handling, permissions, and audit/log evidence. Compare the report against a trusted expected result.",,FAIL,AssertionError: Chat API returned HTTP 500
+86,What do you do if requirements are unclear?,"Ask focused questions, identify assumptions and edge cases, document the agreed expected behavior, and get confirmation from the product owner or relevant stakeholder before treating the behavior as a defect. QA Automation Fresher Interview Guide Page 13 Section 7 — Behavioural & Fresher Interview Questions",,FAIL,AssertionError: Chat API returned HTTP 500
+87,Tell me about yourself for a fresher QA Automation role.,"Sample: 'I am a Computer Science graduate with experience in web development and software testing. I have worked with SQL, REST APIs, Playwright and Python, and I have explored n8n workflow automation. I enjoy investigating issues, validating expected behavior, and automating repeatable checks. I am looking for an entry-level QA Automation role where I can contribute while continuing to improve my testing and coding skills.'",,FAIL,AssertionError: Chat API returned HTTP 500
+88,Why do you want to work in QA automation?,"Sample: 'I like understanding how an application should behave, finding edge cases, and using code to repeat checks reliably. Automation can reduce repetitive effort and catch regressions early, while manual testing helps explore usability and unexpected behavior.'",,FAIL,AssertionError: Chat API returned HTTP 500
+89,What is one strength you bring to QA?,"Sample: 'I am methodical and willing to investigate a problem instead of guessing. I try to reproduce it, collect evidence, compare actual behavior with requirements, and communicate findings clearly.' Choose a strength you can support with a real example.",,FAIL,AssertionError: Chat API returned HTTP 500
+90,What would you do if you don't know the answer to a technical question?,"Be honest, explain what you do know, describe how you would investigate safely, and state how you would verify the answer. Do not bluff or invent experience.",,FAIL,AssertionError: Chat API returned HTTP 500
+91,How do you explain a technical bug to a non-technical stakeholder?,"Explain the user impact in plain language, state how often it occurs and what is affected, provide a clear example, and summarize the next step without unnecessary technical jargon. Quick SQL Revision Cheat Sheet Need Pattern Only matching rows INNER JOIN Keep all rows from left table LEFT JOIN Find unmatched left rows LEFT JOIN ... WHERE right.key IS NULL Filter rows before grouping WHERE Filter grouped results HAVING Find duplicates GROUP BY column HAVING COUNT(*) > 1 Second-highest distinct salary MAX(salary) below MAX(salary) Rank within each group ROW_NUMBER / RANK / DENSE_RANK Find missing values IS NULL / IS NOT NULL Customers with no orders NOT EXISTS or LEFT JOIN + IS NULL Interview tip: For SQL scenario questions, explain your choice of JOIN first, write the query, and then describe what happens to unmatched rows and NULL values. For QA questions, structure answers as: understand requirement → reproduce/test → collect evidence → report → retest → regression check.",,FAIL,AssertionError: Chat API returned HTTP 500
